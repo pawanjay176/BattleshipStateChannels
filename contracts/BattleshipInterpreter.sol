@@ -87,6 +87,7 @@ contract BattleshipInterpreter {
   pure
   returns (bytes)
   {
+    require(state.winner==0, "Game has already been won");
     AppState memory nextState;
     if(action.actionType == ActionType.PLAY) {
       nextState = playMove(state, action);
@@ -126,8 +127,9 @@ contract BattleshipInterpreter {
     if (currPlayer == 0) {
       // Verify that the move hasn't already been played
       require(state.player2Board[currMoveX][currMoveY] == 0, "Square has already been revealed");
-      // Verify previous move.
-      // Maybe take drastic measures such as ending the game to deinsentivise bad behaviour
+      /* Verify previous move.
+         Maybe take drastic measures such as ending the game to deinsentivise bad behaviour
+      */
       require(MerkleProof.verifyProof(action.prevMoveMerkleProof, state.player1MerkleRoot, leaf) == true, "Wrong reporting of previous move");
       // Set the board according to currMove and prevMove
       state.player1Board[prevMoveX][prevMoveY] = action.prevMoveHitOrMiss;
@@ -138,8 +140,9 @@ contract BattleshipInterpreter {
     else if (currPlayer == 1) {
       // Verify that the move hasn't already been played
       require(state.player1Board[currMoveX][currMoveY] == 0, "Square has already been revealed");
-      // Verify previous move.
-      // Maybe take drastic measures such as ending the game to disentivise bad behaviour
+       /* Verify previous move.
+         Maybe take drastic measures such as ending the game to deinsentivise bad behaviour
+      */
       require(MerkleProof.verifyProof(action.prevMoveMerkleProof, state.player2MerkleRoot, leaf) == true, "Wrong reporting of previous move");
       // Set the board according to currMove and prevMove
       state.player2Board[prevMoveX][prevMoveY] = action.prevMoveHitOrMiss;
@@ -157,6 +160,8 @@ contract BattleshipInterpreter {
   internal
   pure
   {
+    // Need to add other conditions as well
+    // e.g. sum(all 3's)==17
     if(player == 0) {
       require(state.player2SunkCount == 17, "Not a winning position");
     }
@@ -173,6 +178,8 @@ contract BattleshipInterpreter {
     uint256 currMoveX = action.currMoveX;
     uint256 currMoveY = action.currMoveY;
     state.player2Board[currMoveX][currMoveY] = 1;
+    state.prevMoveX = currMoveX;
+    state.prevMoveY = currMoveY;
     return state;
   }
 
