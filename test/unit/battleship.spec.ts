@@ -117,6 +117,49 @@ contract("Battleship", (accounts: string[]) => {
       currState.player1Board[0][0].should.be.bignumber.eq(1);
       currState.player2Board[0][0].should.be.bignumber.eq(2);
     })
+
+    it("play winning move", async () => {
+
+      prevState = {
+        players: [Utils.ZERO_ADDRESS, Utils.ZERO_ADDRESS],
+        turnNum: 2, //Ignoring check to avoid calculating turn number in which winning move would happen. Need to fix logic in interpreter
+        winner: 0,
+        player1Board: [[0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]],
+        player2Board: [[0,0,0,0,0,0,0,0,0,0] 
+        , [0,0,0,0,0,0,0,0,0,0] 
+        , [0,0,0,0,0,0,0,0,0,0] 
+        , [0,0,0,0,0,0,0,0,0,0]
+        , [3,0,0,0,0,0,0,0,0,0] 
+        , [3,3,0,0,0,0,0,0,0,0] 
+        , [3,3,3,0,0,0,0,0,0,0]
+        , [3,3,3,0,0,0,0,0,0,0]
+        , [3,3,3,3,0,0,0,0,0,0]
+        , [3,3,3,3,3,0,0,0,0,0]], //need to check sum(board[i][j])==17 in interpreter. 
+        player1MerkleRoot: board2.getMerkleRoot(),
+        player2MerkleRoot: board2.getMerkleRoot(),
+        player1SunkCount: 0,
+        player2SunkCount: 17,
+        prevMoveX: 0,
+        prevMoveY: 0
+      }
+
+      const action = {
+        actionType: 1,
+        currMoveX: 0, //doesn't matter
+        currMoveY: 0, //doesn't matter
+        prevMoveHitOrMiss: 2, //doesn't matter
+        prevMoveSalt: board2.getSalts()[prevMoveX][prevMoveY], //doesn't matter
+        prevMoveMerkleProof: board2.getMerkleProof(prevMoveX, prevMoveY) //doesn't matter
+      }
+      const ret = await game.functions.applyAction(prevState, action);
+
+      const currState = ethers.utils.defaultAbiCoder.decode(
+        [stateEncoding],
+        ret
+      )[0];
+      
+      currState.winner.should.be.bignumber.eq(1);
+    })
   })
   
 

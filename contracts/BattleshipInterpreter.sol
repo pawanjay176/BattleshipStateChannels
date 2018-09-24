@@ -90,7 +90,6 @@ contract BattleshipInterpreter {
     AppState memory nextState;
     if(action.actionType == ActionType.PLAY) {
       nextState = playMove(state, action);
-      nextState.turnNum += 1;
     }
     else if(action.actionType == ActionType.PLAY_AND_WIN) {
       assertWin(state, state.turnNum % 2);
@@ -99,53 +98,9 @@ contract BattleshipInterpreter {
       // Option2: ZKP for proving each player correctly generated board state in the beginning. https://devpost.com/software/gameofsnarks_contracts
       nextState.winner = (nextState.turnNum % 2) + 1; //1 is player1 won, 2 is player2 won. * Turn number is incremented at the end of this function*
     }
+    nextState.turnNum += 1;
     return abi.encode(nextState);
   }
-
-  // function resolve(AppState state, Transfer.Terms terms)
-  // public
-  // pure
-  // returns (Transfer.Details)
-  // {
-  //   require(state.winner != 0, "Game still in progress");
-  //   uint256[] memory amounts = new uint256[](2);
-  //   address[] memory to = new address[](2);
-  //   bytes memory data; // = 0
-
-  //   if (state.winner == 3) {
-  //     amounts[0] = terms.limit / 2;
-  //     amounts[1] = terms.limit / 2;
-
-  //     to[0] = state.players[0];
-  //     to[1] = state.players[1];
-
-  //     return Transfer.Details(
-  //       terms.assetType,
-  //       terms.token,
-  //       to,
-  //       amounts,
-  //       data
-  //     );
-
-  //   } else {
-  //     address loser = state.players[state.winner - 1];
-  //     address winner = state.players[2 - state.winner];
-
-  //     amounts[0] = terms.limit;
-  //     amounts[1] = 0;
-
-  //     to[0] = winner;
-  //     to[1] = loser;
-
-  //     return Transfer.Details(
-  //       terms.assetType,
-  //       terms.token,
-  //       to,
-  //       amounts,
-  //       data
-  //     );
-  //   }
-  // }
 
   function playMove(AppState state, Action action)
   public
@@ -220,4 +175,49 @@ contract BattleshipInterpreter {
     state.player2Board[currMoveX][currMoveY] = 1;
     return state;
   }
+
+    // function resolve(AppState state, Transfer.Terms terms)
+  // public
+  // pure
+  // returns (Transfer.Details)
+  // {
+  //   require(state.winner != 0, "Game still in progress");
+  //   uint256[] memory amounts = new uint256[](2);
+  //   address[] memory to = new address[](2);
+  //   bytes memory data; // = 0
+
+  //   if (state.winner == 3) {
+  //     amounts[0] = terms.limit / 2;
+  //     amounts[1] = terms.limit / 2;
+
+  //     to[0] = state.players[0];
+  //     to[1] = state.players[1];
+
+  //     return Transfer.Details(
+  //       terms.assetType,
+  //       terms.token,
+  //       to,
+  //       amounts,
+  //       data
+  //     );
+
+  //   } else {
+  //     address loser = state.players[state.winner - 1];
+  //     address winner = state.players[2 - state.winner];
+
+  //     amounts[0] = terms.limit;
+  //     amounts[1] = 0;
+
+  //     to[0] = winner;
+  //     to[1] = loser;
+
+  //     return Transfer.Details(
+  //       terms.assetType,
+  //       terms.token,
+  //       to,
+  //       amounts,
+  //       data
+  //     );
+  //   }
+  // }
 }
