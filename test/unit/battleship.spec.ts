@@ -79,7 +79,7 @@ contract("Battleship", (accounts: string[]) => {
     it("play first move", async () => {
       const action = {
         actionType: 0,
-        currMoveX: 0,
+        currMoveX: 9,
         currMoveY: 0,
         prevMoveHitOrMiss: 2, // Won't be used, still encoding
         prevMoveSalt: 0,
@@ -92,7 +92,7 @@ contract("Battleship", (accounts: string[]) => {
         ret
       )[0];
 
-      currState.player2Board[0][0].should.be.bignumber.eq(1);
+      currState.player2Board[9][0].should.be.bignumber.eq(1);
       prevState = currState;
       prevMoveX = action.currMoveX;
       prevMoveY = action.currMoveY;
@@ -103,7 +103,7 @@ contract("Battleship", (accounts: string[]) => {
         actionType: 0,
         currMoveX: 0,
         currMoveY: 0,
-        prevMoveHitOrMiss: 2,
+        prevMoveHitOrMiss: 3,
         prevMoveSalt: board2.getSalts()[prevMoveX][prevMoveY],
         prevMoveMerkleProof: board2.getMerkleProof(prevMoveX, prevMoveY)
       }
@@ -115,7 +115,47 @@ contract("Battleship", (accounts: string[]) => {
       )[0];
       
       currState.player1Board[0][0].should.be.bignumber.eq(1);
-      currState.player2Board[0][0].should.be.bignumber.eq(2);
+      currState.player2Board[9][0].should.be.bignumber.eq(3);
+      prevState = currState;
+      prevMoveX = action.currMoveX;
+      prevMoveY = action.currMoveY;
+    })
+
+    // Game UI should not allow it. Can allow it in the interpreter to punish stupidity. Checking for now. 
+    it("cannot fill already filled square", async () => {
+      const action = {
+        actionType: 0,
+        currMoveX: 9,
+        currMoveY: 0,
+        prevMoveHitOrMiss: 2,
+        prevMoveSalt: board2.getSalts()[prevMoveX][prevMoveY],
+        prevMoveMerkleProof: board2.getMerkleProof(prevMoveX, prevMoveY)
+      }
+      await Utils.assertRejects(game.functions.applyAction(prevState, action));
+    })
+
+    it("wrong prevMoveSalt", async () => {
+      const action = {
+        actionType: 0,
+        currMoveX: 0,
+        currMoveY: 0,
+        prevMoveHitOrMiss: 2,
+        prevMoveSalt: board2.getSalts()[5][prevMoveY],
+        prevMoveMerkleProof: board2.getMerkleProof(prevMoveX, prevMoveY)
+      }
+      await Utils.assertRejects(game.functions.applyAction(prevState, action));
+    })
+
+    it("wrong prevMoveMerkleProof", async () => {
+      const action = {
+        actionType: 0,
+        currMoveX: 0,
+        currMoveY: 0,
+        prevMoveHitOrMiss: 2,
+        prevMoveSalt: board2.getSalts()[5][prevMoveY],
+        prevMoveMerkleProof: board2.getMerkleProof(prevMoveX, prevMoveY).slice(1, 7)
+      }
+      await Utils.assertRejects(game.functions.applyAction(prevState, action));
     })
 
     it("play winning move", async () => {
