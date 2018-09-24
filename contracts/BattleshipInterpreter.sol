@@ -90,6 +90,7 @@ contract BattleshipInterpreter {
     AppState memory nextState;
     if(action.actionType == ActionType.PLAY) {
       nextState = playMove(state, action);
+      nextState.turnNum += 1;
     }
     else if(action.actionType == ActionType.PLAY_AND_WIN) {
       assertWin(state, state.turnNum % 2);
@@ -98,7 +99,6 @@ contract BattleshipInterpreter {
       // Option2: ZKP for proving each player correctly generated board state in the beginning. https://devpost.com/software/gameofsnarks_contracts
       nextState.winner = (nextState.turnNum % 2) + 1; //1 is player1 won, 2 is player2 won. * Turn number is incremented at the end of this function*
     }
-    nextState.turnNum += 1;
     return abi.encode(nextState);
   }
 
@@ -163,9 +163,10 @@ contract BattleshipInterpreter {
 
     require(action.prevMoveHitOrMiss == MISS_SQUARE || action.prevMoveHitOrMiss == HIT_SQUARE, "Invalid value for prevMoveHitOrMiss");
 
-    require(currMoveX >= 0 && currMoveY >= 0 && currMoveX <= 100 && currMoveY <= 100, "Invalid move");
+    require(currMoveX >= 0 && currMoveY >= 0 && currMoveX < 10 && currMoveY < 10, "Invalid move");
 
-    bytes32 leaf = keccak256(abi.encode(action.prevMoveHitOrMiss, prevMoveX, prevMoveY, action.prevMoveSalt));
+    uint256 lastHitOrMiss = action.prevMoveHitOrMiss == 2 ? 0 : 1;
+    bytes32 leaf = keccak256(keccak256(abi.encodePacked(lastHitOrMiss, prevMoveX, prevMoveY, action.prevMoveSalt)));
 
     if (currPlayer == 0) {
       // Verify that the move hasn't already been played
@@ -183,7 +184,7 @@ contract BattleshipInterpreter {
       // Verify that the move hasn't already been played
       require(state.player1Board[currMoveX][currMoveY] == 0, "Square has already been revealed");
       // Verify previous move.
-      // Maybe take drastic measures such as ending the game to deinsentivise bad behaviour
+      // Maybe take drastic measures such as ending the game to disentivise bad behaviour
       require(MerkleProof.verifyProof(action.prevMoveMerkleProof, state.player2MerkleRoot, leaf) == true, "Wrong reporting of previous move");
       // Set the board according to currMove and prevMove
       state.player2Board[prevMoveX][prevMoveY] = action.prevMoveHitOrMiss;
