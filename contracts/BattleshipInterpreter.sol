@@ -32,8 +32,8 @@ contract BattleshipInterpreter {
     address[2] players;
     uint256 turnNum;
     uint256 winner;
-    uint256[100][100] player1Board;
-    uint256[100][100] player2Board;
+    uint256[10][10] player1Board;
+    uint256[10][10] player2Board;
     bytes32 player1MerkleRoot;
     bytes32 player2MerkleRoot;
     uint256 player1SunkCount; //How many squares were sunk. Total 17 squares sunk means all ships are sunk. ** Assuming placed correctly **
