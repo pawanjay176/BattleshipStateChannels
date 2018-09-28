@@ -2,8 +2,15 @@ export function deployTruffleArtifacts(
   loader: ArtifactsLoader,
   deployer: TruffleDeployer
 ) {
-  const ProxyFactory = loader.require("ProxyFactory");
   const Registry = loader.require("Registry");
-  deployer.deploy(ProxyFactory);
+  const StaticCall = loader.require("StaticCall");
+  const Test = loader.require("Test");
+  
+  
+  deployer.deploy(StaticCall).then(() => {
+    deployer.link(StaticCall, [Test]);
+  });
+
   deployer.deploy(Registry);
+  deployer.deploy(StaticCall);
 }
